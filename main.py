@@ -3,24 +3,30 @@ from discord.ext import commands
 import logging
 from discord.ui import View, Button
 from dotenv import load_dotenv
-import os
+import os, random, time
 import requests
 
-class pokemon:
+current_battles = {}
+awaiting_accept = {}
+chosen_pokemons = {}
+class Pokemon:
     def __init__(self, name):
-        url = f'https://pokeapi.co/api/v2/pokemon/{name}'
+        self.name = name
+        url = f'https://pokeapi.co/api/v2/pokemon/{name.lower()}'
         response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            hp = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'hp')
-            attack = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'attack')
-            defense = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'defense')
-            moves = [move['move']['name'] for move in data['moves']]
+        if response.status_code != 200:
+            raise ValueError("Nie znaleziono Pokémona.")
+        data = response.json()
+        self.hp = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'hp')
+        self.attack = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'attack')
+        self.defense = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'defense')
+
+        all_moves = [move['move']['name'] for move in data['moves']]
+        self.moves = random.sample(all_moves, min(4, len(all_moves)))
 
 
 
-import time
-import requests
+
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -67,11 +73,67 @@ async def on_message(message):
     elif "czaje" in message.content.lower() and not message.author.bot:
         await message.channel.send("Ta? To git")
 
+    if message.content.lower() == "accept" and message.author.id in awaiting_accept:
+        challenger_id = awaiting_accept.pop(message.author.id)
+        pair = tuple(sorted([challenger_id, message.author.id]))
+        current_battles[pair] = {"players": [challenger_id, message.author.id], "turn": 0}
+        await message.channel.send(
+            f"{message.author.mention} zaakceptował walkę! Obaj gracze wpiszcie `!!choose <pokemon>`.")
+
     await bot.process_commands(message)
 
 @bot.command()
+async def choose(ctx, name):
+    try:
+        pkm = Pokemon(name)
+        chosen_pokemons[ctx.author.id] = pkm
+        await ctx.send(f"{ctx.author.mention} wybrał {pkm.name} z ruchami: {', '.join(pkm.moves)}")
+    except Exception as e:
+        await ctx.send("Nie udało się pobrać Pokémona.")
+
+@bot.command()
 async def walka(ctx, user: discord.Member):
-    await ctx.send(f"{ctx.author.mention} wyzwał {user.mention} do walki! Wybierzcie swoje pokemony komendą !!choose <nazwa>")
+    if ctx.author.id == user.id:
+        await ctx.send("Nie możesz wyzwać samego siebie!")
+        return
+    awaiting_accept[user.id] = ctx.author.id
+    await ctx.send(f"{ctx.author.mention} wyzwał {user.mention} do walki! Aby zaakceptować, wpisz `accept`.")
+
+@bot.command()
+async def attack(ctx, move):
+    match = [k for k in current_battles if ctx.author.id in k]
+    if not match:
+        await ctx.send("Nie bierzesz udziału w żadnej walce.")
+        return
+
+    battle = current_battles[match[0]]
+    players = battle["players"]
+    attacker = ctx.author.id
+    defender = [p for p in players if p != attacker][0]
+
+    if players[battle["turn"] % 2] != attacker:
+        await ctx.send("Nie Twoja tura!")
+        return
+
+    attacker_poke = chosen_pokemons.get(attacker)
+    defender_poke = chosen_pokemons.get(defender)
+
+    if move not in attacker_poke.moves:
+        await ctx.send("Twój Pokémon nie zna tego ruchu!")
+        return
+
+    dmg = max(1, int((attacker_poke.attack / defender_poke.defense) * random.randint(10, 20)))
+    defender_poke.hp -= dmg
+
+    await ctx.send(f"{ctx.author.mention}'s {attacker_poke.name} używa {move} i zadaje {dmg} obrażeń!")
+    await ctx.send(f"{defender_poke.name} ma teraz {defender_poke.hp} HP.")
+
+    if defender_poke.hp <= 0:
+        await ctx.send(f"{ctx.author.mention} wygrywa walkę!")
+        del current_battles[match[0]]
+        return
+
+    battle["turn"] += 1
 
 @bot.command()
 async def stats(ctx,*,name):
