@@ -110,6 +110,18 @@ async def choose(ctx, name):
         embed.set_image(url=pkm.sprite)
         embed.description = f"HP: {pkm.hp}\nAttack: {pkm.attack}\nDefense:{pkm.defense}"
         chosen_pokemons[ctx.author.id] = pkm
+
+        embed.add_field(name="-------------------------------------------------", value="\u200b", inline=False)
+        _ = 0
+        for move_ in pkm.moves:
+            _ += 1
+            embed.add_field(name=move_, value=pkm.moves[move_], inline=True)
+
+            if _ == 2:
+                embed.add_field(name="\u200b", value="\u200b", inline=False)
+
+
+
         await ctx.send(f"{ctx.author.mention} wybrał {pkm.name} z ruchami: {', '.join(pkm.moves)}", embed=embed)
     except Exception as e:
         await ctx.send("Nie udało się pobrać Pokémona.")
