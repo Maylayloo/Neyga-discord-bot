@@ -20,6 +20,7 @@ class Pokemon:
         self.hp = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'hp')
         self.attack = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'attack')
         self.defense = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'defense')
+        self.sprite = data['sprites']['front_default']
 
         all_moves = [move['move']['name'] for move in data['moves']]
         self.moves = random.sample(all_moves, min(4, len(all_moves)))
@@ -86,8 +87,13 @@ async def on_message(message):
 async def choose(ctx, name):
     try:
         pkm = Pokemon(name)
+        embed = discord.Embed(
+            title=name
+        )
+        embed.set_image(url=pkm.sprite)
+        embed.description = f"HP: {pkm.hp}\nAttack: {pkm.attack}\nDefense:{pkm.defense}"
         chosen_pokemons[ctx.author.id] = pkm
-        await ctx.send(f"{ctx.author.mention} wybrał {pkm.name} z ruchami: {', '.join(pkm.moves)}")
+        await ctx.send(f"{ctx.author.mention} wybrał {pkm.name} z ruchami: {', '.join(pkm.moves)}", embed=embed)
     except Exception as e:
         await ctx.send("Nie udało się pobrać Pokémona.")
 
