@@ -42,7 +42,7 @@ def calculate_damage(attacker, defender, move_power):
         return random.randint(1, 5)
 
     modifier = random.uniform(0.85, 1.0)
-    base_damage = (((2 * 50 / 5 + 2) * move_power * (attacker.attack / defender.defense)) / 50) + 2
+    base_damage = ((((2 * 50 / 5 + 2) * move_power * (attacker.attack / defender.defense)) / 50) + 2) / 2
     return int(base_damage * modifier)
 
 
@@ -115,7 +115,10 @@ async def choose(ctx, name):
         _ = 0
         for move_ in pkm.moves:
             _ += 1
-            embed.add_field(name=move_, value=pkm.moves[move_], inline=True)
+            if pkm.moves[move_] is None:
+                embed.add_field(name=move_, value="1-5", inline=True)
+            else:
+                embed.add_field(name=move_, value=pkm.moves[move_], inline=True)
 
             if _ == 2:
                 embed.add_field(name="\u200b", value="\u200b", inline=False)
