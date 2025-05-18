@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 import logging
-
 from discord.ui import View, Button
 from dotenv import load_dotenv
 import os
@@ -16,6 +15,7 @@ class pokemon:
             hp = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'hp')
             attack = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'attack')
             defense = next(stat['base_stat'] for stat in data['stats'] if stat['stat']['name'] == 'defense')
+            moves = [move['move']['name'] for move in data['moves']]
 
 
 
@@ -70,13 +70,6 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-@bot.command()
-async def pokemon(ctx, *, id):
-    url = f'https://pokeapi.co/api/v2/pokemon/{id}'
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        await ctx.send(f"{data['name']}")
 
 
 @bot.command()
@@ -208,8 +201,6 @@ async def IwantIn(ctx):
     await ctx.send("Welcome to the neyga testing club!")
 
 @IwantIn.error
-
-@secret.error
 async def secret_error(ctx, error):
     if isinstance(error, commands.MissingRole):
         await ctx.send("You do not have permission to do that!")
