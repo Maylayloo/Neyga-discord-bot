@@ -23,10 +23,27 @@ class Pokemon:
         self.sprite = data['sprites']['front_default']
 
         all_moves = [move['move']['name'] for move in data['moves']]
-        self.moves = random.sample(all_moves, min(4, len(all_moves)))
+        selected_moves = random.sample(all_moves, min(4, len(all_moves)))
+
+        self.moves = {}
+        for move_name in selected_moves:
+            move_url = f"https://pokeapi.co/api/v2/move/{move_name}"
+            move_resp = requests.get(move_url)
+            if move_resp.status_code == 200:
+                move_data = move_resp.json()
+                self.moves[move_name] = move_data['power']
+            else:
+                self.moves[move_name] = None
 
 
 
+def calculate_damage(attacker, defender, move_power):
+    if move_power is None:
+        return random.randint(1, 5)
+
+    modifier = random.uniform(0.85, 1.0)
+    base_damage = (((2 * 50 / 5 + 2) * move_power * (attacker.attack / defender.defense)) / 50) + 2
+    return int(base_damage * modifier)
 
 
 load_dotenv()
@@ -128,7 +145,8 @@ async def attack(ctx, move):
         await ctx.send("Twój Pokémon nie zna tego ruchu!")
         return
 
-    dmg = max(1, int((attacker_poke.attack / defender_poke.defense) * random.randint(10, 20)))
+    move_power = attacker_poke.moves[move]
+    dmg = calculate_damage(attacker_poke, defender_poke, move_power)
     defender_poke.hp -= dmg
 
     await ctx.send(f"{ctx.author.mention}'s {attacker_poke.name} używa {move} i zadaje {dmg} obrażeń!")
