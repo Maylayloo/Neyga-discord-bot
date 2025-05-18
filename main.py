@@ -69,8 +69,9 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-
-
+@bot.command()
+async def walka(ctx, user: discord.Member):
+    await ctx.send(f"{ctx.author.mention} wyzwał {user.mention} do walki! Wybierzcie swoje pokemony komendą !!choose <nazwa>")
 
 @bot.command()
 async def stats(ctx,*,name):
