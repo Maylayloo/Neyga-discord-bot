@@ -1,16 +1,46 @@
-# This is a sample Python script.
+import asyncio
+from http import client
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import discord
+from discord.ext import commands
+import os
+from dotenv import load_dotenv, dotenv_values
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+intents = discord.Intents.default()
+bot = commands.Bot(command_prefix="!!", intents=intents)
+intents.message_content = True
+intents.voice_states = True
+load_dotenv()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
+
+
+@bot.command()
+async def hejka(ctx):
+    author = ctx.author
+    await ctx.send(f"Wal {author.display_name} ")
+
+@bot.command()
+async def DawajNaSolo(ctx):
+    if ctx.author.voice is None:
+        await ctx.send("Musisz być na kanale głosowym, żeby bot mógł dołączyć.")
+        return
+
+    kanal = ctx.author.voice.channel
+    await kanal.connect()
+    await ctx.send(f"Dołączono do: {kanal.name}")
+
+
+
+@bot.command()
+async def test(ctx):
+    await ctx.send("Siemka")
+
+bot.run(os.getenv("DISCORD_TOKEN"))
+
+
