@@ -1,8 +1,6 @@
-import pytest
-import random
 from unittest.mock import patch
 
-from main import calculate_damage
+from bot.main import calculate_damage
 
 
 class DummyPokemon:
