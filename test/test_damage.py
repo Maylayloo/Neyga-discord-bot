@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from bot.main import calculate_damage
+from bot.models.pokemon_class import calculate_damage
 
 
 class DummyPokemon:
