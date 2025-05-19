@@ -67,13 +67,21 @@ class Neyga_Pokemon(commands.Cog):
 
     @commands.command(help="<pokemon> - wybierz swojego pokemona podczas walki")
     async def choose(self, ctx, name):
+        in_battle = any(ctx.author.id in pair for pair in current_battles)
+        if not in_battle:
+            await ctx.send("Musisz najpierw rozpocząć walkę (`!!walka <użytkownik>` i zaakceptować).")
+            return
+
+        if ctx.author.id in chosen_pokemons:
+            await ctx.send("Już wybrałeś Pokémona do tej walki!")
+            return
+
         try:
             pkm = Pokemon(name)
-            embed = discord.Embed(
-                title=name
-            )
+            embed = discord.Embed(title=name)
             embed.set_image(url=pkm.sprite)
-            embed.description = f"HP: {pkm.hp}\nAttack: {pkm.attack}\nDefense:{pkm.defense}"
+            embed.description = f"HP: {pkm.hp}\nAttack: {pkm.attack}\nDefense: {pkm.defense}"
+
             chosen_pokemons[ctx.author.id] = pkm
 
             embed.add_field(name="-------------------------------------------------", value="\u200b", inline=False)
@@ -179,6 +187,8 @@ class Neyga_Pokemon(commands.Cog):
         if defender_poke.hp <= 0:
             await ctx.send(f"{ctx.author.mention} wygrywa walkę!")
             del current_battles[match[0]]
+            chosen_pokemons.pop(attacker, None)
+            chosen_pokemons.pop(defender, None)
             return
 
         battle["turn"] += 1
@@ -333,5 +343,6 @@ async def on_message(message):
 
 
 
+if __name__ == "__main__":
+    bot.run(token, log_handler=handler, log_level=logging.DEBUG)
 
-bot.run(token, log_handler=handler, log_level=logging.DEBUG)
