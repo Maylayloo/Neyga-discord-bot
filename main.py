@@ -65,7 +65,7 @@ class Neyga_Pokemon(commands.Cog):
     def __init__(self, dbot):
         self.bot = dbot
 
-    @commands.command()
+    @commands.command(help="<pokemon> - wybierz swojego pokemona podczas walki")
     async def choose(self, ctx, name):
         try:
             pkm = Pokemon(name)
@@ -92,7 +92,7 @@ class Neyga_Pokemon(commands.Cog):
         except Exception as e:
             await ctx.send("Nie udało się pobrać Pokémona.")
 
-    @commands.command()
+    @commands.command(help="Wyzwij kogoś do walki")
     async def walka(self, ctx, user: discord.Member):
         if ctx.author.id == user.id:
             await ctx.send("Nie możesz wyzwać samego siebie!")
@@ -146,7 +146,7 @@ class Neyga_Pokemon(commands.Cog):
         else:
             await ctx.send(f"nie dziala")
 
-    @commands.command()
+    @commands.command(help="<Atak> - Twój pokemon używa atak podczas walki")
     async def attack(self, ctx, move):
         match = [k for k in current_battles if ctx.author.id in k]
         if not match:
@@ -166,7 +166,7 @@ class Neyga_Pokemon(commands.Cog):
         defender_poke = chosen_pokemons.get(defender)
 
         if move not in attacker_poke.moves:
-            await ctx.send("Twój NeygaPokemon nie zna tego ruchu!")
+            await ctx.send("Twój Pokémon nie zna tego ruchu!")
             return
 
         move_power = attacker_poke.moves[move]
@@ -183,13 +183,13 @@ class Neyga_Pokemon(commands.Cog):
 
         battle["turn"] += 1
 
-    @commands.command()
+    @commands.command(help="<Pokemon> - wyświetl informacje o pokemonie")
     async def pokemon(self, ctx, *, name):
         try:
             pkm = Pokemon(name)
 
             embed = discord.Embed(
-                title=f"NeygaPokemon: {name}",
+                title=f"Pokémon: {name}",
             )
             embed.set_image(url=pkm.sprite)
 
