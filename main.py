@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from discord.ext import commands
 import logging
@@ -107,6 +108,12 @@ class Neyga_Pokemon(commands.Cog):
             return
         awaiting_accept[user.id] = ctx.author.id
         await ctx.send(f"{ctx.author.mention} wyzwał {user.mention} do walki! Aby zaakceptować, wpisz `accept`.")
+
+        await asyncio.sleep(15)
+
+        if user.id in awaiting_accept and awaiting_accept[user.id] == ctx.author.id:
+            del awaiting_accept[user.id]
+            await ctx.send(f"{user.mention} nie zaakceptował walki na czas.")
 
     @commands.command()
     async def stats(self, ctx, *, name):
@@ -218,6 +225,8 @@ class Neyga_Pokemon(commands.Cog):
 
         except Exception as e:
             await ctx.send("Nie znaleziono Pokemona")
+
+
 class Neyga_Yapping(commands.Cog):
     def __init__(self, dbot):
         self.bot = dbot
@@ -345,4 +354,3 @@ async def on_message(message):
 
 if __name__ == "__main__":
     bot.run(token, log_handler=handler, log_level=logging.DEBUG)
-
