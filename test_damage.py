@@ -4,10 +4,12 @@ from unittest.mock import patch
 
 from main import calculate_damage
 
+
 class DummyPokemon:
     def __init__(self, attack, defense):
         self.attack = attack
         self.defense = defense
+
 
 def test_damage_with_known_move_power():
     attacker = DummyPokemon(attack=100, defense=50)
@@ -21,6 +23,7 @@ def test_damage_with_known_move_power():
     expected_damage = int(expected_base * 0.9)
 
     assert damage == expected_damage
+
 
 def test_damage_with_none_power():
     attacker = DummyPokemon(attack=100, defense=100)
@@ -38,6 +41,7 @@ def test_mewtwo_tri_attack(mocked_rand):
     blissey = DummyPokemon(10, 10)
     dmg = calculate_damage(mewtwo, blissey, 80)
     assert 192 <= dmg <= 194
+
 
 @patch("random.uniform", return_value=0.85)
 def test_blissey_mega_kick(mocked_rand):
