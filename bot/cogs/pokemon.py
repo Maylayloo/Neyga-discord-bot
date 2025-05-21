@@ -47,7 +47,7 @@ class Neyga_Pokemon(commands.Cog):
         except Exception as e:
             await ctx.send("Nie udało się pobrać Pokémona.")
 
-    @commands.command(help="Wyzwij kogoś do walki")
+    @commands.command(help="<@gracz> Wyzwij kogoś do walki")
     async def walka(self, ctx, user: discord.Member):
         if ctx.author.id == user.id:
             await ctx.send("Nie możesz wyzwać samego siebie!")
@@ -61,7 +61,7 @@ class Neyga_Pokemon(commands.Cog):
             del state.awaiting_accept[user.id]
             await ctx.send(f"{user.mention} nie zaakceptował walki na czas.")
 
-    @commands.command()
+    @commands.command(help="<move> sprawdz moc danego ataku")
     async def move(self, ctx, *, name):
         url = f'https://pokeapi.co/api/v2/move/{name}'
         response = requests.get(url)
